@@ -2,6 +2,7 @@ package in.shahvez.invoicegeneratorapi.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod; // <-- Yeh naya import hai
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,11 +21,14 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Public endpoints (in sab par security nahi lagegi)
+                        // === YAHAN FINAL BADLAV KIYA GAYA HAI ===
+                        // Sabhi OPTIONS requests ko bina security ke allow karein
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public endpoints
                         .requestMatchers("/api/invoices/hello", "/api/webhooks/**").permitAll()
 
-                        // === YAHAN BADLAV KIYA GAYA HAI ===
-                        // Batayein ki invoices aur users, dono endpoints protected hain
+                        // Protected endpoints
                         .requestMatchers("/api/invoices/**", "/api/users/**").authenticated()
 
                         // Koi aur anjaan request ko block karein
