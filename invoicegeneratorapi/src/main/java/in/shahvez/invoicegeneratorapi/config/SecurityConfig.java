@@ -1,11 +1,15 @@
+
 package in.shahvez.invoicegeneratorapi.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod; // <-- Yeh naya import hai
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -16,22 +20,18 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // Yeh Railway se clerk.jwks-url variable ki value lega
+    @Value("${clerk.jwks-url}")
+    private String jwksUrl;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        // === YAHAN FINAL BADLAV KIYA GAYA HAI ===
-                        // Sabhi OPTIONS requests ko bina security ke allow karein
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // Public endpoints
                         .requestMatchers("/api/invoices/hello", "/api/webhooks/**").permitAll()
-
-                        // Protected endpoints
                         .requestMatchers("/api/invoices/**", "/api/users/**").authenticated()
-
-                        // Koi aur anjaan request ko block karein
                         .anyRequest().denyAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
@@ -41,15 +41,20 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // === YEH NAYA TOOL (BEAN) ADD KIYA GAYA HAI ===
+    // Yeh bean JWT token ko decode aur verify karega
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withJwkSetUri(this.jwksUrl).build();
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
         configuration.setAllowedOrigins(List.of("https://invoicegeneratorweb.netlify.app", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
