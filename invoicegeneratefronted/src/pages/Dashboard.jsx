@@ -27,7 +27,7 @@ const Dashboard = () =>{
             }
 
          }
-         fetchInvoices()
+        // fetchInvoices()
     },[baseUrl])
 
     const handleViewClick = (invoice) =>{
