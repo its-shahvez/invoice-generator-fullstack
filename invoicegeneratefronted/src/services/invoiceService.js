@@ -1,10 +1,9 @@
 import axios from "axios";
 
 
-// Hum baseUrl ko yahan environment variables se padh rahe hain.
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-// Ab sabhi functions mein se 'baseUrl' parameter ko hata diya gaya hai.
+
 
 export const saveInvoice = (payload, token) => {
     return axios.post(`${baseUrl}/invoices`, payload, {
