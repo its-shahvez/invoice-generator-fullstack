@@ -20,7 +20,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Yeh Railway se clerk.jwks-url variable ki value lega
     @Value("${clerk.jwks-url}")
     private String jwksUrl;
 
@@ -41,8 +40,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // === YEH NAYA TOOL (BEAN) ADD KIYA GAYA HAI ===
-    // Yeh bean JWT token ko decode aur verify karega
     @Bean
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withJwkSetUri(this.jwksUrl).build();
@@ -51,10 +48,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://invoicegeneratorweb.netlify.app", "http://localhost:5173"));
+
+        // === YEH FINAL BADLAV HAI ===
+        // Humne Netlify ke sabhi URLs ko allow kar diya hai (*.netlify.app)
+        configuration.setAllowedOriginPatterns(List.of("https://*.netlify.app", "http://localhost:5173"));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
