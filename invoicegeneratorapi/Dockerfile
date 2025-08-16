@@ -14,11 +14,13 @@ RUN ./mvnw clean package -DskipTests
 # Expose the port the application will run on
 EXPOSE 8080
 
-# === FINAL CMD: Inject MongoDB variables from Railway ===
+
 CMD bash -c "java \
   -Dspring.data.mongodb.host=$MONGO_HOST \
   -Dspring.data.mongodb.port=$MONGO_PORT \
   -Dspring.data.mongodb.database=$MONGO_DB \
   -jar target/invoicegeneratorapi-0.0.1-SNAPSHOT.jar"
+
+  CMD ["java", "-jar", "target/invoicegeneratorapi-0.0.1-SNAPSHOT.jar"]
 
 
