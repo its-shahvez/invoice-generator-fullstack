@@ -50,7 +50,7 @@ const PreviewPage = () =>{
                 template: selectedTemplate
             }
             const token = await  getToken();
-            const response = await saveInvoice(baseUrl,payload, token)
+            const response = await saveInvoice(payload, token)
             if(response.status===200){
                 toast.success("Invoice saved Successfully");
                 navigate("/dashboard");
