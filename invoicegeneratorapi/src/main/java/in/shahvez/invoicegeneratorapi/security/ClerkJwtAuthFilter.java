@@ -10,11 +10,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j; // <-- Naya import
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -25,7 +25,7 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
-
+@Slf4j // <-- Naya Annotation
 public class ClerkJwtAuthFilter  extends OncePerRequestFilter {
 
     @Value("${clerk.issuer}")
@@ -39,8 +39,8 @@ public class ClerkJwtAuthFilter  extends OncePerRequestFilter {
         if(request.getRequestURI().contains("/api/webhooks")){
             filterChain.doFilter(request,response);
             return;
-
         }
+
         String authheader = request.getHeader("Authorization");
         if(authheader == null || !authheader.startsWith("Bearer")){
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header is missing/invalid");
@@ -71,12 +71,9 @@ public class ClerkJwtAuthFilter  extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request,response);
         } catch (Exception e){
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token");
-
+            // === YAHAN BADLAV KIYA GAYA HAI ===
+            log.error("JWT Validation Error: ", e); // Error ko log karein
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: " + e.getMessage());
         }
-
-
-
-
     }
 }
