@@ -1,5 +1,6 @@
 package in.shahvez.invoicegeneratorapi.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper; // <-- Naya Import
 import in.shahvez.invoicegeneratorapi.entity.Invoice;
 import in.shahvez.invoicegeneratorapi.service.EmailService;
 import in.shahvez.invoicegeneratorapi.service.InvoiceService;
@@ -18,17 +19,24 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/invoices")
-
 @Slf4j
 public class invoiceController {
 
     private final InvoiceService invoiceService;
     private final EmailService emailService;
 
+    // === YAHAN BADLAV KIYA GAYA HAI ===
     @PostMapping
-    public ResponseEntity<Invoice> saveInvoice(@RequestBody Invoice invoice){
-       return  ResponseEntity.ok(invoiceService.saveInvoice(invoice));
-
+    public ResponseEntity<Invoice> saveInvoice(@RequestBody String rawPayload){
+        log.info(">>>>>> RAW INVOICE PAYLOAD RECEIVED: {}", rawPayload); // Hum raw data log kar rahe hain
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Invoice invoice = mapper.readValue(rawPayload, Invoice.class);
+            return  ResponseEntity.ok(invoiceService.saveInvoice(invoice));
+        } catch (Exception e) {
+            log.error(">>>>>> FAILED TO PARSE INVOICE JSON: ", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid invoice data format");
+        }
     }
 
     @GetMapping
@@ -41,34 +49,26 @@ public class invoiceController {
         if (authentication.getName() != null) {
             invoiceService.invoiceRemove(id, authentication.getName());
             return  ResponseEntity.noContent().build();
-
         }
         throw new ResponseStatusException(HttpStatus.FORBIDDEN,"userdoes not have permission to access resource");
     }
 
     @PostMapping("/sendinvoice")
-
     public  ResponseEntity<?> sendInvoice(@RequestParam("file") MultipartFile file,
                                           @RequestParam("email") String customerEmail)  {
-        log.error("<<<<<<<<<< SEND INVOICE METHOD IS RUNNING! (NEW CODE) >>>>>>>>>>");
-
-          try{
-               emailService.sendInvoiceEmail(customerEmail,file);
-               return ResponseEntity.ok().body("Email Sent Successfully");
-
-          } catch(Exception e){
-              log.error("ERROR sending email to: {}. Reason: {}", customerEmail, e.getMessage(), e);
-
-             return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to Send Invoice");
-
-          }
-
-
+        log.info("<<<<<<<<<< SEND INVOICE METHOD IS RUNNING! >>>>>>>>>>");
+        try{
+            emailService.sendInvoiceEmail(customerEmail,file);
+            return ResponseEntity.ok().body("Email Sent Successfully");
+        } catch(Exception e){
+            log.error("ERROR sending email to: {}. Reason: {}", customerEmail, e.getMessage(), e);
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to Send Invoice");
+        }
     }
+
     @GetMapping("/hello")
     public String sayHello() {
-        log.error("<<<<<<<<<< HELLO METHOD IS WORKING! >>>>>>>>>>");
+        log.info("<<<<<<<<<< HELLO METHOD IS WORKING! >>>>>>>>>>");
         return "Hello, World! The controller is working!";
     }
-
 }
