@@ -1,12 +1,18 @@
 # Stage 1: Build the application using Maven and Java 21
-FROM maven:3.9-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY . .
-RUN mvn clean install -DskipTests
+# Use a base image with Java 21
+FROM openjdk:21-slim
 
-# Stage 2: Create the final, smaller image for running the app
-FROM eclipse-temurin:21-jre-jammy
+# Set the working directory inside the container
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+# Copy ONLY the backend code into the container's /app directory
+COPY ./invoice-generator-api /app
+
+# Run the Maven build command from within the /app directory
+RUN ./mvnw clean package -DskipTests
+
+# Expose the port the application will run on
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# The command to run the application
+CMD ["java", "-jar", "target/invoicegeneratorapi-0.0.1-SNAPSHOT.jar"]
