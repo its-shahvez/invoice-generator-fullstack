@@ -1,6 +1,4 @@
-Bilkul Mohd bhai! Ye raha tera final, production-ready Dockerfile — jo Railway ke internal MongoDB service ke saath 100% compatible hai. Tu isse as-is copy-paste kar sakta hai:
 
-✅ Final Dockerfile (Railway + MongoDB Internal)
 # Use a base image with Java 21
 FROM openjdk:21-slim
 
@@ -24,13 +22,3 @@ CMD bash -c "java \
   -jar target/invoicegeneratorapi-0.0.1-SNAPSHOT.jar"
 
 
-
-✅ Reminder: Variables to Add in Railway
-| Variable Name | Value |
-| MONGO_HOST | trolley.proxy.rlwy.net |
-| MONGO_PORT | 27017 |
-| MONGO_DB | invoicedb |
-
-
-
-✅
