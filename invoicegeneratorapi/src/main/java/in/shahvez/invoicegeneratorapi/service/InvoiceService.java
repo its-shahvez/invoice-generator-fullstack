@@ -1,3 +1,4 @@
+
 package in.shahvez.invoicegeneratorapi.service;
 
 
@@ -26,7 +27,7 @@ public class InvoiceService {
 
     public void invoiceRemove(String invoiceId,String clerkId){
         Invoice existingInvoice = invoiceRepository.findByClerkIdAndId(clerkId,invoiceId)
-                 .orElseThrow(() -> new RuntimeException("Invoice Not Found:"+ invoiceId));
+                .orElseThrow(() -> new RuntimeException("Invoice Not Found:"+ invoiceId));
 
         invoiceRepository.delete(existingInvoice);
     }
