@@ -1,6 +1,4 @@
-
 package in.shahvez.invoicegeneratorapi.service;
-
 
 import in.shahvez.invoicegeneratorapi.entity.Invoice;
 import in.shahvez.invoicegeneratorapi.repository.InvoiceRepository;
@@ -13,26 +11,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoiceService {
 
-    private final InvoiceRepository invoiceRepository;
+    private final InvoiceRepository repository;
 
-    public Invoice saveInvoice(Invoice invoice){
-
-        return   invoiceRepository.save(invoice);
+    public Invoice saveInvoice(Invoice invoice) {
+        return repository.save(invoice);
     }
 
-
-    public List<Invoice> fetchInvoices(String clerkId){
-        return invoiceRepository.findByClerkId(clerkId);
+    public List<Invoice> fetchInvoices(String clerkId) {
+        return repository.findByClerkId(clerkId);
     }
 
-    public void invoiceRemove(String invoiceId,String clerkId){
-        Invoice existingInvoice = invoiceRepository.findByClerkIdAndId(clerkId,invoiceId)
-                .orElseThrow(() -> new RuntimeException("Invoice Not Found:"+ invoiceId));
-
-        invoiceRepository.delete(existingInvoice);
+    public void removeInvoice(String clerkId, String invoiceId) {
+        Invoice existingInvoice = repository.findByClerkIdAndId(clerkId, invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice not found:" + invoiceId));
+        repository.delete(existingInvoice);
     }
-
-
-
-
 }

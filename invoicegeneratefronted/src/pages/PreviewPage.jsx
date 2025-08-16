@@ -14,7 +14,7 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 const PreviewPage = () =>{
     const previewRef    = useRef();
 
-    const {selectedTemplate, invoiceData, setSelectedTemplate, baseUrl} = useContext(AppContext)
+    const {selectedTemplate, invoiceData, setSelectedTemplate, baseURL} = useContext(AppContext)
 
     const [loading, setLoading] = useState(false)
 
@@ -50,7 +50,7 @@ const PreviewPage = () =>{
                 template: selectedTemplate
             }
             const token = await  getToken();
-            const response = await saveInvoice(payload, token)
+            const response = await saveInvoice(baseURL, payload, token)
             if(response.status===200){
                 toast.success("Invoice saved Successfully");
                 navigate("/dashboard");
@@ -76,7 +76,7 @@ const PreviewPage = () =>{
         
         try {
               const token = await getToken()
-            const response =await deleteInvoice(baseUrl, invoiceData.id,token);
+            const response =await deleteInvoice(baseURL, invoiceData.id,token);
             if( response.status ===204){
                 toast.success(" Invoice Delete Successfully");
                 navigate("/dashboard");
@@ -138,7 +138,7 @@ const PreviewPage = () =>{
 
         // Step 5: API
         const token = await getToken()
-        const response = await sendInvoice(baseUrl, formData,token);
+        const response = await sendInvoice(baseURL, token, formData);
         
         // Step 6:
         if (response.status === 200) {

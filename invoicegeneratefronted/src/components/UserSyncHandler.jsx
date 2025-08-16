@@ -10,7 +10,7 @@ const UserSyncHandler = () =>{
     const [synced, setSynced] = useState(false);
     const {isLoaded, isSignedIn ,getToken}= useAuth();
     const {user} = useUser();
-    const {baseUrl}    =  useContext(AppContext)
+    const {baseURL}    =  useContext(AppContext)
      
     useEffect(() => {
  const saveUser = async() =>{
@@ -28,10 +28,11 @@ const UserSyncHandler = () =>{
             photoUrl : user.imageUrl
          }
 
-          await axios.post(baseUrl+"/users",userData, {headers:{Authorization:`Bearer ${token}`}});
+          await axios.post(baseURL+"/users",userData, {headers:{Authorization:`Bearer ${token}`}});
           setSynced(true);
 
     } catch (error) {
+        console.error("User sync failed", error);
         toast.error(error.message);
         
     }

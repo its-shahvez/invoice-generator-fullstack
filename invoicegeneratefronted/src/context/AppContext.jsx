@@ -1,51 +1,41 @@
-import {  createContext, useState } from "react";
+import { createContext, useState } from "react";
 
 export const AppContext = createContext();
 
 export const initialInvoiceData = {
-    title:"New Invoice",
-    billing: {name:"", phone:"", address:""},
-    shipping:{name:"", phone:"", address:""},
-    invoice:{number:"", date:"", dueDate:""},
-    account: {name:"", number:"", ifsccode:""},
-    company:{name:"", phone:"", address:""},
-    tax:0,
-    notes:"",
-    items:[
-        {name:"", qty:"", amount:"", description:"", total:0},
-    ],
-    logo:""
-}
+  title: "Create Invoice",
+  billing: { name: "", phone: "", address: "" },
+  shipping: { name: "", phone: "", address: "" },
+  invoice: { number: "", date: "", dueDate: "" },
+  account: { name: "", number: "", ifsccode: "" },
+  company: { name: "", phone: "", address: "" },
+  tax: 0,
+  notes: "",
+  items: [{ name: "", qty: "", amount: "", description: "", total: 0 }],
+  logo: "",
+};
 
-export const AppContextProvider = ({children}) =>{
+export const AppContextProvider = (props) => {
+  const [invoiceData, setInvoiceData] = useState(initialInvoiceData);
+  const [invoiceTitle, setInvoiceTitle] = useState("Create Invoice");
+  const [selectedTemplate, setSelectedTemplate] = useState("template1");
 
-    const [invoiceTitle, setInvoiceTitle] = useState("New Invoice");
-    const [invoiceData, setInvoiceData] = useState(initialInvoiceData);
-    const [selectedTemplate, setSelectedTemplate] = useState("template1")
+  const baseURL = "http://localhost:8080/api";
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL;
-
-  const contextValue ={
-    invoiceTitle,
-    setInvoiceTitle,
+  const contextValue = {
+    baseURL,
     invoiceData,
     setInvoiceData,
+    invoiceTitle,
+    setInvoiceTitle,
     selectedTemplate,
     setSelectedTemplate,
     initialInvoiceData,
-    baseUrl
+  };
 
-
-  }
-
-
-
-
-
-
-    return(
-        <AppContext.Provider value={contextValue}>
-            {children}
-        </AppContext.Provider>
-    )
-}
+  return (
+    <AppContext.Provider value={contextValue}>
+      {props.children}
+    </AppContext.Provider>
+  );
+};

@@ -1,6 +1,5 @@
 package in.shahvez.invoicegeneratorapi.security;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -10,7 +9,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j; // <-- Naya import
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,55 +23,61 @@ import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j // <-- Naya Annotation
-public class ClerkJwtAuthFilter  extends OncePerRequestFilter {
+public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
     @Value("${clerk.issuer}")
     private String clerkIssuer;
 
-    private  final ClerkJwksProvider jwksProvider;
-
+    private final ClerkJwksProvider jwksProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(request.getRequestURI().contains("/api/webhooks")){
-            filterChain.doFilter(request,response);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        if (request.getRequestURI().contains("/api/webhooks")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String authheader = request.getHeader("Authorization");
-        if(authheader == null || !authheader.startsWith("Bearer")){
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header is missing/invalid");
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header missing/invalid");
             return;
         }
 
-        try{
-            String token = authheader.substring(7);
+        try {
+            String token = authHeader.substring(7);
 
-            String[] chunks=token.split("\\.");
+            // extract the kid from token header
+            String[] chunks = token.split("\\.");
             String headerJson = new String(Base64.getUrlDecoder().decode(chunks[0]));
             ObjectMapper mapper = new ObjectMapper();
             JsonNode headerNode = mapper.readTree(headerJson);
             String kid = headerNode.get("kid").asText();
 
+            // get the correct public key
             PublicKey publicKey = jwksProvider.getPublicKey(kid);
+
+            // verify the token
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(publicKey)
-                    .setAllowedClockSkewSeconds(60)
+                    .setAllowedClockSkewSeconds(60) // allow 60 seconds
                     .requireIssuer(clerkIssuer)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
 
+            String clerkUserId = claims.getSubject();
 
-            String clerUserId = claims.getSubject();
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(clerUserId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    clerkUserId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            filterChain.doFilter(request,response);
-        } catch (Exception e){
-            // === YAHAN BADLAV KIYA GAYA HAI ===
-            log.error("JWT Validation Error: ", e); // Error ko log karein
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: " + e.getMessage());
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token");
+            return;
         }
     }
 }

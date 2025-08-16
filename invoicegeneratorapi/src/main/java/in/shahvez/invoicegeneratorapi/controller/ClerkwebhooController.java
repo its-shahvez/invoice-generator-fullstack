@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("api/webhooks")
+@RequestMapping("/api/webhooks")
 @RequiredArgsConstructor
 public class ClerkwebhooController {
 
@@ -23,47 +23,43 @@ public class ClerkwebhooController {
 
     @PostMapping("/clerk")
     public ResponseEntity<?> handleClerkWebhook(@RequestHeader("svix-id") String svixId,
-                                                @RequestHeader("svix-timestamp")String svixTimestamp,
+                                                @RequestHeader("svix-timestamp") String svixTimestamp,
                                                 @RequestHeader("svix-signature") String svixSignature,
-                                                @RequestBody String payload){
-        try{
-            verifyWebhokSignature(svixId,svixTimestamp,svixSignature,payload);
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode rootNote = mapper.readTree(payload);
+                                                @RequestBody String payload) {
+        try {
+            verifyWebhookSignature(svixId, svixTimestamp, svixSignature, payload);
 
-            String  eventType = rootNote.path("type").asText();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(payload);
 
-            switch (eventType){
+            String eventType = rootNode.path("type").asText();
+
+            switch (eventType) {
                 case "user.created":
-                    handleUserCreated(rootNote.path("data"));
+                    handleUserCreated(rootNode.path("data"));
                     break;
                 case "user.updated":
-                    handleUserUpdated(rootNote.path("data"));
+                    handleUserUpdated(rootNode.path("data"));
                     break;
-
                 case "user.deleted":
-                    handleUserDeleted(rootNote.path("data"));
+                    handleUserDeleted(rootNode.path("data"));
                     break;
             }
             return ResponseEntity.ok().build();
-
-
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
-
         }
 
     }
 
     private void handleUserDeleted(JsonNode data) {
-      String clerkId =  data.path("id").asText();
-      userService.deleteAccount(clerkId);
-
+        String clerkId = data.path("id").asText();
+        userService.deleteAccount(clerkId);
     }
 
     private void handleUserUpdated(JsonNode data) {
         String clerkId = data.path("id").asText();
-        User existingUser = userService.getAccountClerkId(clerkId);
+        User existingUser = userService.getAccountByClerkId(clerkId);
 
         existingUser.setEmail(data.path("email_addresses").path(0).path("email_address").asText());
         existingUser.setFirstName(data.path("first_name").asText());
@@ -71,24 +67,20 @@ public class ClerkwebhooController {
         existingUser.setPhotoUrl(data.path("image_url").asText());
 
         userService.saveOrUpdateUser(existingUser);
-
-
-
     }
 
     private void handleUserCreated(JsonNode data) {
-      User newUser =   User.builder()
+
+        User newUser = User.builder()
                 .clerkId(data.path("id").asText())
                 .email(data.path("email_addresses").path(0).path("email_address").asText())
                 .firstName(data.path("first_name").asText())
                 .lastName(data.path("last_name").asText())
                 .build();
-
         userService.saveOrUpdateUser(newUser);
     }
 
-    private boolean verifyWebhokSignature(String svixId, String svixTimestamp, String svixSignature, String payload) {
-    //TODO:VERIFY THE SIGNATURE
+    private boolean verifyWebhookSignature(String svixId, String svixTimestamp, String svixSignature, String payload) {
         return true;
     }
 }
