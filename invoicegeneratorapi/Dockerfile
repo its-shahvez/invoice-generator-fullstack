@@ -1,4 +1,3 @@
-# Stage 1: Build the application using Maven and Java 21
 # Use a base image with Java 21
 FROM openjdk:21-slim
 
@@ -14,5 +13,12 @@ RUN ./mvnw clean package -DskipTests
 # Expose the port the application will run on
 EXPOSE 8080
 
-# The command to run the application
-CMD ["java", "-jar", "target/invoicegeneratorapi-0.0.1-SNAPSHOT.jar"]
+# === YEH FINAL BADLAV HAI ===
+# Hum saari database settings direct command se inject kar rahe hain
+CMD ["java", \
+    "-Dspring.data.mongodb.host=${MONGO_HOST}", \
+    "-Dspring.data.mongodb.port=${MONGO_PORT}", \
+    "-Dspring.data.mongodb.username=${MONGO_USER}", \
+    "-Dspring.data.mongodb.password=${MONGO_PASSWORD}", \
+    "-Dspring.data.mongodb.database=invoicedb", \
+    "-jar", "target/invoicegeneratorapi-0.0.1-SNAPSHOT.jar"]
