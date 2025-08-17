@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 // TODO: Production mein "*" ki jagah apne frontend ka URL daalein (e.g., "https://your-app.com")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "invoice-genere.netlify.app")
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
