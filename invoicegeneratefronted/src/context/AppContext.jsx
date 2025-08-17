@@ -20,7 +20,7 @@ export const AppContextProvider = (props) => {
   const [invoiceTitle, setInvoiceTitle] = useState("Create Invoice");
   const [selectedTemplate, setSelectedTemplate] = useState("template1");
 
-  const baseURL = "https://invoice-generator-fullstack.onrender.com";
+  const baseURL = "https://invoice-generator-fullstack.onrender.com/api";
 
   const contextValue = {
     baseURL,
